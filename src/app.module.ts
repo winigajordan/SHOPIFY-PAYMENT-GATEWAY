@@ -7,6 +7,9 @@ import configuration from './config/configuration';
 import { UsersModule } from './modules/users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ShopifyModule } from './modules/shopify/shopify.module';
+import { OrdersModule } from './modules/order/orders.module';
+import { CustomersModule } from './modules/customers/customers.module';
 
 @Module({
   imports: [
@@ -18,6 +21,9 @@ import { AuthModule } from './modules/auth/auth.module';
     DatabaseModule,
     UsersModule,
     AuthModule,
+    ShopifyModule,
+    OrdersModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

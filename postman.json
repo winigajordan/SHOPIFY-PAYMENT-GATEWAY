@@ -1,0 +1,198 @@
+{
+  "info": {
+    "name": "Shopify Payment Gateway - Stores",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "storeId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Stores CRUD",
+      "item": [
+        {
+          "name": "1. Create Store",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has store ID\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.collectionVariables.set(\"storeId\", jsonData.data.id);",
+                  "});",
+                  "",
+                  "pm.test(\"Store is active by default\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.isActive).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ma Première Boutique\",\n  \"shopDomain\": \"ma-boutique-test.myshopify.com\",\n  \"accessToken\": \"shpat_1234567890abcdefghijklmnop\",\n  \"webhookSecret\": \"webhook_secret_test123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shopify/stores",
+              "host": ["{{baseUrl}}"],
+              "path": ["shopify", "stores"]
+            }
+          }
+        },
+        {
+          "name": "2. Get All Stores (Active Only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shopify/stores",
+              "host": ["{{baseUrl}}"],
+              "path": ["shopify", "stores"]
+            }
+          }
+        },
+        {
+          "name": "3. Get Store by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shopify/stores/{{storeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["shopify", "stores", "{{storeId}}"]
+            }
+          }
+        },
+        {
+          "name": "4. Update Store",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Boutique Mise à Jour\",\n  \"accessToken\": \"shpat_nouveau_token_updated_123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shopify/stores/{{storeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["shopify", "stores", "{{storeId}}"]
+            }
+          }
+        },
+        {
+          "name": "5. Deactivate Store",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shopify/stores/{{storeId}}/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["shopify", "stores", "{{storeId}}", "deactivate"]
+            }
+          }
+        },
+        {
+          "name": "6. Activate Store",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shopify/stores/{{storeId}}/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["shopify", "stores", "{{storeId}}", "activate"]
+            }
+          }
+        },
+        {
+          "name": "7. Delete Store",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shopify/stores/{{storeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["shopify", "stores", "{{storeId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Tests",
+      "item": [
+        {
+          "name": "Invalid Domain",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Erreur\",\n  \"shopDomain\": \"invalide-domain.com\",\n  \"accessToken\": \"token123456789\",\n  \"webhookSecret\": \"secret123456789\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shopify/stores",
+              "host": ["{{baseUrl}}"],
+              "path": ["shopify", "stores"]
+            }
+          }
+        },
+        {
+          "name": "Duplicate Domain",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Boutique Duplicate\",\n  \"shopDomain\": \"ma-boutique-test.myshopify.com\",\n  \"accessToken\": \"token_duplicate_123456789\",\n  \"webhookSecret\": \"secret_duplicate_123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shopify/stores",
+              "host": ["{{baseUrl}}"],
+              "path": ["shopify", "stores"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
