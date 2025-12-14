@@ -10,6 +10,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ShopifyModule } from './modules/shopify/shopify.module';
 import { OrdersModule } from './modules/order/orders.module';
 import { CustomersModule } from './modules/customers/customers.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { CommonModule } from './modules/common/common.module';
+import { BictorysModule } from './modules/bictorys/bictorys.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -18,12 +22,16 @@ import { CustomersModule } from './modules/customers/customers.module';
       load: [configuration],
       validationSchema,
     }),
+    CommonModule,
     DatabaseModule,
     UsersModule,
     AuthModule,
     ShopifyModule,
     OrdersModule,
     CustomersModule,
+    PaymentsModule,
+    BictorysModule,
+    NotificationsModule
   ],
   controllers: [AppController],
   providers: [AppService],

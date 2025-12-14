@@ -12,7 +12,7 @@ import {
   DefaultValuePipe,
   ParseBoolPipe,
 } from '@nestjs/common';
-import { ShopifyService } from './shopify.service';
+import { ShopifyService } from './services/shopify.service';
 import { CreateShopifyStoreDto } from './dto/create-shopify-store.dto';
 import { UpdateShopifyStoreDto } from './dto/update-shopify-store.dto';
 

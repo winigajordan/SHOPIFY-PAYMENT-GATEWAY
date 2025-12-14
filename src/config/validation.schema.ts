@@ -15,4 +15,8 @@ export const validationSchema = Joi.object({
 
   JWT_SECRET: Joi.string().required(),
   JWT_EXPIRES_IN: Joi.string().default('3600s'),
+
+
+  BICTORYS_API_URL : Joi.string().required(),
+  BICTORYS_PAYMENT_PATH : Joi.string().required(),
 });

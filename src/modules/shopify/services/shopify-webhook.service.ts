@@ -2,10 +2,13 @@
 import { Injectable, Logger, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { ShopifyService } from './shopify.service';
-import { CustomersService } from '../customers/customers.service';
-import { ShopifyOrderWebhookDto } from './dto/hopify-order-webhook.dto';
-import { PaymentMethod } from './enum/payment-method.enum';
-import { OrdersService } from '../order/order.service';
+import { CustomersService } from '../../customers/customers.service';
+import { ShopifyOrderWebhookDto } from '../dto/hopify-order-webhook.dto';
+import { PaymentMethod } from '../enum/payment-method.enum';
+import { OrdersService } from '../../order/order.service';
+import { PaymentsService } from '../../payments/payments.service';
+import { BictorysService } from '../../bictorys/bictorys.service';
+import { PaymentLinkSenderFactory } from '../../notifications/factories/payment-link-sender.factory';
 
 interface ProcessWebhookParams {
   hmacHeader: string;
@@ -29,6 +32,11 @@ export class ShopifyWebhookService {
     private readonly shopifyService: ShopifyService,
     private readonly customersService: CustomersService,
     private readonly ordersService: OrdersService,
+    private readonly paymentsService: PaymentsService,
+    private readonly bictorysService: BictorysService,
+    private readonly paymentLinkSenderFactory: PaymentLinkSenderFactory, // ← Ajouter
+
+
   ) {}
 
   /**
@@ -186,7 +194,14 @@ export class ShopifyWebhookService {
       if (gateway.includes('orange') || gateway.includes('om')) {
         return PaymentMethod.ORANGE_MONEY;
       }
-      
+
+      if (gateway.includes('bictorys')) {
+        return PaymentMethod.BICTORYS;
+      }
+
+
+
+      /*
       // Si COD, chercher dans note_attributes
       if (gateway.includes('cod') || gateway.includes('cash on delivery')) {
         const methodFromNotes = this.extractFromNoteAttributes(payload);
@@ -194,13 +209,18 @@ export class ShopifyWebhookService {
           return methodFromNotes;
         }
       }
+
+       */
     }
 
+    /*
     // 2. Alternative : note_attributes
     const methodFromNotes = this.extractFromNoteAttributes(payload);
     if (methodFromNotes) {
       return methodFromNotes;
     }
+
+     */
 
     // 3. Aucun moyen de paiement trouvé → ERREUR
     throw new BadRequestException(
@@ -211,7 +231,7 @@ export class ShopifyWebhookService {
 
   /**
    * Extraire depuis note_attributes
-   */
+
   private extractFromNoteAttributes(payload: ShopifyOrderWebhookDto): PaymentMethod | null {
     if (payload.note_attributes && payload.note_attributes.length > 0) {
       const paymentNote = payload.note_attributes.find(
@@ -231,12 +251,16 @@ export class ShopifyWebhookService {
         if (value.includes('orange') || value.includes('om')) {
           return PaymentMethod.ORANGE_MONEY;
         }
+
+        if (value.includes('Bictorys')) {
+          return PaymentMethod.BICTORYS;
+        }
       }
     }
 
     return null;
   }
-
+   */
   /**
    * Valider la commande (STRICT)
    */
@@ -305,12 +329,53 @@ export class ShopifyWebhookService {
       paymentMethod,
     );
 
-    this.logger.log(`✅ Order created: #${order.shopifyOrderNumber} (${order.id})`);
+    this.logger.log(`✅ Order created: ${order.shopifyOrderName} (${order.id})`); // ← CHANGÉ
     this.logger.log(`💰 Amount: ${order.totalAmount} ${order.currency}`);
     this.logger.log(`📊 Status: ${order.status}`);
+    this.logger.log(`🔗 Order status URL: ${order.orderStatusUrl}`);
 
-    // TODO: Créer PaymentTransaction via PaymentsModule
-    // TODO: Appeler Bictorys pour générer lien de paiement
+    // 6. Créer PaymentTransaction
+    const paymentTransaction = await this.paymentsService.createPaymentForOrder(order);
+
+    this.logger.log(`✅ Payment transaction created: ${paymentTransaction.id}`);
+    this.logger.log(`📱 Channel: ${paymentTransaction.paymentChannel}`);
+    this.logger.log(`📊 Status: ${paymentTransaction.status}`);
+
+
+    // 7. Générer le lien de paiement Bictorys
+    let bictorysResponse;
+    try {
+      bictorysResponse = await this.bictorysService.createPaymentLink(paymentTransaction);
+
+      // 8. Mettre à jour la transaction avec le lien
+      await this.paymentsService.updateWithPaymentLink(
+        paymentTransaction.id,
+        bictorysResponse.link,
+        bictorysResponse.chargeId,
+      );
+
+      this.logger.log(`✅ Payment link generated: ${bictorysResponse.link}`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to generate payment link: ${error.message}`);
+
+      await this.paymentsService.markAsFailed(
+        paymentTransaction.id,
+        `Failed to generate payment link: ${error.message}`,
+      );
+
+      throw error;
+    }
+
+    // 9. Envoyer le lien au client (Email ou SMS)
+    // ❌ SUPPRIMÉ le try/catch pour que l'exception remonte
+    const sender = this.paymentLinkSenderFactory.create(customer, store);
+    await sender.sendPaymentLink(customer, bictorysResponse.link, order);
+    this.logger.log('✅ Payment link sent to customer');
+
+    this.logger.log(`✅ Order #${payload.order_number} processed successfully`);
+
+
+
     // TODO: Envoyer le lien au client (SMS ou Email)
 
     this.logger.log(`✅ Order #${payload.order_number} processed successfully`);

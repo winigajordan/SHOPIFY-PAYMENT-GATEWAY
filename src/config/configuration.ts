@@ -14,4 +14,11 @@ export default () => ({
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '3600s',
   },
+  encryption: {
+    key: process.env.ENCRYPTION_KEY,
+  },
+  bictorys : {
+    key : process.env.BICTORYS_API_URL,
+    paymentPath: process.env.BICTORYS_PAYMENT_PATH,
+  }
 });

@@ -9,7 +9,7 @@ import {
   } from 'typeorm';
   import { ShopifyStore } from '../../shopify/entities/shopify-store.entity';
   import { Customer } from '../../customers/entities/customer.entity';
-import { BaseEntity } from 'src/common/entities/base.entity';
+import { BaseEntity } from 'src/utils/entities/base.entity';
 import { PaymentMethod } from 'src/modules/shopify/enum/payment-method.enum';
 import { OrderStatus } from '../enum/order-status.enum';
   
@@ -18,10 +18,11 @@ import { OrderStatus } from '../enum/order-status.enum';
     @Column({ type: 'varchar', length: 255, unique: true })
     @Index()
     shopifyOrderId: string;
-  
-    @Column({ type: 'integer' })
-    shopifyOrderNumber: number;
-  
+
+    @Column({ type: 'varchar', length: 100, unique: true, nullable: true })
+    @Index()
+    shopifyOrderName: string;
+
     @ManyToOne(() => ShopifyStore, { eager: false })
     @JoinColumn({ name: 'storeId' })
     store: ShopifyStore;
@@ -49,6 +50,16 @@ import { OrderStatus } from '../enum/order-status.enum';
     })
     @Index()
     status: OrderStatus;
+
+    @Column({ type: 'text', nullable: true })
+    orderStatusUrl: string | null; // ← NOUVEAU
+
+    @Column({ type: 'jsonb', nullable: true })
+    lineItems: Array<{
+      name: string;
+      price: number;
+      quantity: number;
+    }> | null; // ← NOUVEAU
 
   
     @BeforeInsert()

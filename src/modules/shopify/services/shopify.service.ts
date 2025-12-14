@@ -2,20 +2,26 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateShopifyStoreDto } from './dto/create-shopify-store.dto';
-import { UpdateShopifyStoreDto } from './dto/update-shopify-store.dto';
+import { CreateShopifyStoreDto } from '../dto/create-shopify-store.dto';
+import { UpdateShopifyStoreDto } from '../dto/update-shopify-store.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ShopifyStore } from './entities/shopify-store.entity';
+import { ShopifyStore } from '../entities/shopify-store.entity';
+import { CryptoService } from '../../common/services/crypto/crypto.service';
 
 @Injectable()
 export class ShopifyService {
 
+  private readonly logger = new Logger(ShopifyService.name);
+
+
   constructor(
     @InjectRepository(ShopifyStore)
     private readonly shopifyStoreRepository: Repository<ShopifyStore>,
+    private readonly cryptoService: CryptoService,
   ) {}
 
   /**
@@ -33,8 +39,27 @@ export class ShopifyService {
       );
     }
 
+    // Chiffrer brevoConfig.apiKey si présent
+    let brevoConfig = null;
+    if (dto.brevoConfig) {
+      // @ts-ignore
+      brevoConfig = {
+        apiKey: this.cryptoService.encrypt(dto.brevoConfig.apiKey),
+        senderEmail: dto.brevoConfig.senderEmail,
+        templateId: dto.brevoConfig.templateId,
+      };
+    }
+
     // Créer la boutique
-    const store = this.shopifyStoreRepository.create(dto);
+    const store = this.shopifyStoreRepository.create({
+      name: dto.name,
+      shopDomain: dto.shopDomain,
+      accessToken: this.cryptoService.encrypt(dto.accessToken),
+      webhookSecret: dto.webhookSecret,
+      bictorysApiKey: this.cryptoService.encrypt(dto.bictorysApiKey), // ← Chiffrer
+      brevoConfig
+    });
+
 
     return this.shopifyStoreRepository.save(store);
   }
@@ -80,6 +105,33 @@ export class ShopifyService {
     return store;
   }
 
+
+   /**
+   * Récupérer la clé API Bictorys déchiffrée
+   */
+   getBictorysApiKey(store: ShopifyStore): string {
+    return this.cryptoService.decrypt(store.bictorysApiKey);
+  }
+
+
+  /**
+   * Récupérer la clé API Brevo déchiffrée
+   */
+  getBrevoApiKey(store: ShopifyStore): string {
+    if (!store.brevoConfig) {
+      throw new Error('Brevo config not found for this store');
+    }
+    return this.cryptoService.decrypt(store.brevoConfig.apiKey);
+  }
+
+
+  /**
+   * Récupérer l'access token Shopify déchiffré
+   */
+  getAccessToken(store: ShopifyStore): string {
+    return this.cryptoService.decrypt(store.accessToken);
+  }
+
   /**
    * Mettre à jour une boutique
    */
@@ -87,6 +139,7 @@ export class ShopifyService {
     id: string,
     dto: UpdateShopifyStoreDto,
   ): Promise<ShopifyStore> {
+
     // Vérifier que la boutique existe
     const store = await this.findOne(id);
 
@@ -103,8 +156,32 @@ export class ShopifyService {
       }
     }
 
-    // Mettre à jour
-    Object.assign(store, dto);
+    // Chiffrer la clé Bictorys si elle est modifiée
+    if (dto.bictorysApiKey) {
+      store.bictorysApiKey = this.cryptoService.encrypt(dto.bictorysApiKey);
+    }
+
+    // Chiffrer accessToken si modifié
+    if (dto.accessToken) {
+      store.accessToken = this.cryptoService.encrypt(dto.accessToken);
+    }
+
+
+    if (dto.brevoConfig) {
+      store.brevoConfig = {
+        apiKey: this.cryptoService.encrypt(dto.brevoConfig.apiKey),
+        senderEmail: dto.brevoConfig.senderEmail,
+        templateId: dto.brevoConfig.templateId,
+      };
+    }
+
+    // Mettre à jour les autres champs
+    if (dto.name) store.name = dto.name;
+    if (dto.shopDomain) store.shopDomain = dto.shopDomain;
+    if (dto.webhookSecret) store.webhookSecret = dto.webhookSecret;
+
+    if (dto.isActive !== undefined) store.isActive = dto.isActive;
+
     return this.shopifyStoreRepository.save(store);
   }
 

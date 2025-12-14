@@ -1,4 +1,30 @@
-import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+class BrevoConfigDto {
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(10)
+  apiKey: string;
+
+  @IsNotEmpty()
+  @IsEmail()
+  senderEmail: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  templateId: number;
+}
 
 export class CreateShopifyStoreDto {
   @IsNotEmpty()
@@ -21,4 +47,15 @@ export class CreateShopifyStoreDto {
   @IsString()
   @MinLength(10)
   webhookSecret: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(10)
+  bictorysApiKey: string;
+
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => BrevoConfigDto)
+  brevoConfig?: BrevoConfigDto;
 }

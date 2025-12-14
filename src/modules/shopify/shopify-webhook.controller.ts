@@ -9,7 +9,7 @@ import {
   Logger,
   Req,
 } from '@nestjs/common';
-import { ShopifyWebhookService } from './shopify-webhook.service';
+import { ShopifyWebhookService } from './services/shopify-webhook.service';
 
 @Controller('shopify/webhooks')
 export class ShopifyWebhookController {

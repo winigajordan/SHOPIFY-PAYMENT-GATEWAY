@@ -1,6 +1,6 @@
 // src/modules/users/entities/user.entity.ts
 import { Entity, Column, BeforeInsert } from 'typeorm';
-import { BaseEntity } from '../../../common/entities/base.entity';
+import { BaseEntity } from '../../../utils/entities/base.entity';
 import * as bcrypt from 'bcrypt';
 
 
