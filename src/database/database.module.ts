@@ -17,7 +17,7 @@ import { ConfigService } from '@nestjs/config';
           password: db.pass,
           database: db.name,
           entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-          synchronize: true, // à activer en dev si tu veux, mais pas en prod
+          synchronize: false, // à activer en dev si tu veux, mais pas en prod
         };
       },
     }),
