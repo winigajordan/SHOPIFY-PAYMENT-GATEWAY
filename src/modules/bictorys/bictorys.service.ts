@@ -161,9 +161,11 @@ export class BictorysService {
 
     this.logger.log(`Bictorys payload: ${JSON.stringify(payload, null, 2)}`);
 
+    const bictorysApiUrl = `${this.apiUrl}${this.paymentPath}`;
+
     try {
       const response = await fetch(
-        `${this.apiUrl}/pay/v1/charges?payment_type=card`,
+        `${bictorysApiUrl}`,
         {
           method: 'POST',
           headers: {
@@ -194,6 +196,8 @@ export class BictorysService {
       throw error;
     }
   }
+
+
   /**
    * Vérifier le statut d'un paiement Bictorys
    */

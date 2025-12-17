@@ -19,4 +19,6 @@ export const validationSchema = Joi.object({
 
   BICTORYS_API_URL : Joi.string().required(),
   BICTORYS_PAYMENT_PATH : Joi.string().required(),
+
+  ENCRYPTION_KEY : Joi.string().required(),
 });
