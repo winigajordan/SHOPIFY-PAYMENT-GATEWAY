@@ -9,8 +9,8 @@ import {
   } from 'typeorm';
   import { ShopifyStore } from '../../shopify/entities/shopify-store.entity';
   import { Customer } from '../../customers/entities/customer.entity';
-import { BaseEntity } from 'src/utils/entities/base.entity';
-import { PaymentMethod } from 'src/modules/shopify/enum/payment-method.enum';
+import { BaseEntity } from '../../../utils/entities/base.entity';
+import { PaymentMethod } from '../../shopify/enum/payment-method.enum';
 import { OrderStatus } from '../enum/order-status.enum';
   
   @Entity('orders')

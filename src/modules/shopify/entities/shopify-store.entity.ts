@@ -1,5 +1,5 @@
 // src/shopify/entities/shopify-store.entity.ts
-import { BaseEntity } from 'src/utils/entities/base.entity';
+import { BaseEntity } from '../../../utils/entities/base.entity';
 import { Entity, Column, Index, AfterLoad, BeforeInsert, BeforeUpdate } from 'typeorm';
 
 @Entity('shopify_stores')

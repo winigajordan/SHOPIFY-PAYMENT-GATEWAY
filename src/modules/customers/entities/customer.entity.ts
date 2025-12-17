@@ -9,7 +9,7 @@ import {
     Index,
   } from 'typeorm';
   import { ShopifyStore } from '../../shopify/entities/shopify-store.entity';
-import { BaseEntity } from 'src/utils/entities/base.entity';
+import { BaseEntity } from '../../../utils/entities/base.entity';
   
   @Entity('customers')
   export class Customer extends BaseEntity {

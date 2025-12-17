@@ -1,7 +1,8 @@
 // src/payments/entities/payment-transaction.entity.ts
-import { BaseEntity } from 'src/utils/entities/base.entity';
-import { Order } from 'src/modules/order/entities/order.entity';
-import { PaymentMethod } from 'src/modules/shopify/enum/payment-method.enum';
+
+import { BaseEntity } from '../../../utils/entities/base.entity';
+import { Order } from '../../order/entities/order.entity';
+import { PaymentMethod } from '../../shopify/enum/payment-method.enum';
 import { 
     Entity, 
     Column, 
