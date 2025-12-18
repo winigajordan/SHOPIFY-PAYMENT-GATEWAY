@@ -152,7 +152,7 @@ export class BictorysService {
 
     const payload: BictorysCreateChargeDto = {
       amount: Math.round(transaction.amount),
-      currency: transaction.currency.toLowerCase(),
+      currency: transaction.currency.toUpperCase(),
       paymentReference, // ← EDEN-1018 (sans le #)
       successRedirectUrl: order.orderStatusUrl || 'https://google.com',
       orderDetails,
